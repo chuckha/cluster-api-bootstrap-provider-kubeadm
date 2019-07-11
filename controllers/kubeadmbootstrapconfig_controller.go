@@ -20,12 +20,15 @@ import (
 	"context"
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"github.com/go-logr/logr"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	kubeadmv1alpha1 "sigs.k8s.io/cluster-api-bootstrap-provider-kubeadm/api/v1alpha1"
 	clusterapiv1alpha2 "sigs.k8s.io/cluster-api/pkg/apis/cluster/v1alpha2"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // KubeadmBootstrapConfigReconciler reconciles a KubeadmBootstrapConfig object
@@ -36,11 +39,14 @@ type KubeadmBootstrapConfigReconciler struct {
 
 // +kubebuilder:rbac:groups=kubeadm.bootstrap.cluster.sigs.k8s.io,resources=kubeadmbootstrapconfigs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=kubeadm.bootstrap.cluster.sigs.k8s.io,resources=kubeadmbootstrapconfigs/status,verbs=get;update;patch
+// TODO Add RBAC for machines
 
 // Reconcile TODO
 func (r *KubeadmBootstrapConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	log := r.Log.WithValues("kubeadmbootstrapconfig", req.NamespacedName)
+	log := r.Log.WithValues("key", req.NamespacedName)
+
+	log.Info("starting a reconcile")
 
 	machine := &clusterapiv1alpha2.Machine{}
 	if err := r.Get(ctx, req.NamespacedName, machine); err != nil {
@@ -52,7 +58,22 @@ func (r *KubeadmBootstrapConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Res
 
 // SetupWithManager TODO
 func (r *KubeadmBootstrapConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	machineSource := &source.Kind{Type: &clusterapiv1alpha2.Machine{}}
+	h := &handler.EnqueueRequestsFromMapFunc{ToRequests: r}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&kubeadmv1alpha1.KubeadmBootstrapConfig{}).
+		Watches(machineSource, h).
 		Complete(r)
+}
+
+func (r *KubeadmBootstrapConfigReconciler) Map(object handler.MapObject) []reconcile.Request {
+	return []reconcile.Request{
+		{
+			NamespacedName: types.NamespacedName{
+				Namespace: object.Meta.GetNamespace(),
+				Name:      object.Meta.GetName(),
+			},
+		},
+	}
 }

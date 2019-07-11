@@ -17,7 +17,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-VERSION=${VERSION:-0.2.0-beta.2}
+VERSION=${VERSION:-0.2.0-beta.3}
 
 # get out of the module
 cd /tmp
