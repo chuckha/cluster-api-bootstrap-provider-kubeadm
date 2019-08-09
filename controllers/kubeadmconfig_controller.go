@@ -107,18 +107,9 @@ func (r *KubeadmConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, erro
 		return ctrl.Result{}, nil
 	}
 
-	if machine.Labels[capiv1alpha2.MachineClusterLabelName] == "" {
-		return ctrl.Result{}, errors.New("machine has no associated cluster")
-	}
-
-	// Get the cluster
-	cluster := &capiv1alpha2.Cluster{}
-	clusterKey := client.ObjectKey{
-		Namespace: req.Namespace,
-		Name:      machine.Labels[capiv1alpha2.MachineClusterLabelName],
-	}
-	if err := r.Get(ctx, clusterKey, cluster); err != nil {
-		log.Error(err, "failed to get cluster")
+	cluster, err := util.GetClusterFromMetadata(ctx, r.Client, machine.ObjectMeta)
+	if err != nil {
+		log.Error(err, "could not get cluster")
 		return ctrl.Result{}, err
 	}
 
