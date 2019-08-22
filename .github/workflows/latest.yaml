@@ -4,8 +4,8 @@ on:
     branches:
     - master
 jobs:
-  release:
-    name: Release
+  latest:
+    name: Latest
     runs-on: ubuntu-latest
     steps:
     - name: Check out code
