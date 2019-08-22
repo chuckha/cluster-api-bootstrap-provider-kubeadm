@@ -83,6 +83,10 @@ fmt:
 vet:
 	go vet ./...
 
+.PHONY: mod
+mod:
+	go mod download
+
 # Generate code
 .PHONY: generate
 generate: $(CONTROLLER_GEN)

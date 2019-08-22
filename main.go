@@ -35,6 +35,11 @@ import (
 var (
 	myscheme = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
+
+	// these get set with goreleaser (ldflags)
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
 )
 
 func init() {
@@ -55,6 +60,9 @@ func main() {
 	flag.Parse()
 
 	ctrl.SetLogger(klogr.New())
+
+	// Always log the version at the start
+	ctrl.Log.Info("Version Information", "version", version, "commit", commit, "built at", date)
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             myscheme,
