@@ -1,0 +1,27 @@
+name: Release
+on: create
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v1
+
+    - name: Install goreleaser
+      run: sudo snap install --classic goreleaser
+
+    - name: GCR Setup
+      uses: actions/gcloud/auth@master
+      env:
+        GCLOUD_AUTH: ${{ secrets.MY_GCLOUD_AUTH }}
+
+    - name: GCR Auth
+      uses: actions/gcloud/cli@master
+      with:
+        args: "auth configure-docker --quiet"
+
+    - name: Runs goreleaser
+      run: sudo goreleaser release
+      env:
+        GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
