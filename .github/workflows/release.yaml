@@ -1,11 +1,8 @@
-name: Latest
-on:
-  push:
-    branches:
-    - master
+name: Release
+on: create
 jobs:
   release:
-    name: Latest
+    name: Release
     runs-on: ubuntu-latest
     steps:
     - name: Check out code
@@ -15,4 +12,4 @@ jobs:
       uses: docker://goreleaser/goreleaser
       id: goreleaser
       with:
-        args: release --snapshot
+        args: release
