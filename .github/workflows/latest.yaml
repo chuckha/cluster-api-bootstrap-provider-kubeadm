@@ -1,5 +1,4 @@
 name: Latest
-description: Runs goreleaser while skipping the release process and only pushing a new image.
 inputs:
   registry:
     description: The base registry to tag the image with
