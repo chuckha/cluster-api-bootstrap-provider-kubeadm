@@ -14,12 +14,6 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v1
 
-    - name: Install goreleaser
-      run: |
-        curl -sLO https://github.com/goreleaser/goreleaser/releases/download/v0.116.0/goreleaser_amd64.deb
-        sudo dpkg -i goreleaser_amd64.deb
-        rm goreleaser_amd64.deb
-
     - name: GCR Setup
       uses: actions/gcloud/auth@master
       env:
@@ -31,7 +25,9 @@ jobs:
         args: "auth configure-docker"
 
     - name: Runs goreleaser (only for github release)
-      run: goreleaser release
+      uses: docker://goreleaser/goreleaser
+      with:
+        args: "release"
       env:
         GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
