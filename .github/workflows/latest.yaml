@@ -1,4 +1,18 @@
 name: Latest
+description: Runs goreleaser while skipping the release process and only pushing a new image.
+inputs:
+  registry:
+    description: The base registry to tag the image with
+    required: false
+    default: gcr.io/k8s-staging-capi-kubeadm/manager
+  goreleaserVersion:
+    description: The version of goreleaser to installl
+    required: false
+    default: v0.116.0
+  goVersion:
+    description: The version of go to use
+    required: false
+    default: "1.12"
 on:
   push:
     branches:
@@ -8,11 +22,39 @@ jobs:
     name: Latest
     runs-on: ubuntu-latest
     steps:
-    - name: Check out code
-      uses: actions/checkout@v1
+      - name: Set up Go ${{ inputs.goVersion }}
+        uses: actions/setup-go@v1
+        with:
+          go-version: ${{ inputs.goVersion }}
+        id: go
 
-    - name: Runs goreleaser
-      uses: docker://goreleaser/goreleaser
-      id: goreleaser
-      with:
-        args: release --snapshot
+      - name: Check out code
+        uses: actions/checkout@v1
+
+      - name: Install goreleaser ${{ inputs.goreleaserVersion }}
+        run: |
+          curl -sLO https://github.com/goreleaser/goreleaser/releases/download/${{ inputs.goreleaserVersion }}/goreleaser_amd64.deb
+          sudo dpkg -i goreleaser_amd64.deb
+          rm goreleaser_amd64.deb
+
+      - name: GCR Setup
+        uses: actions/gcloud/auth@master
+        env:
+          GCLOUD_AUTH: ${{ secrets.MY_GCLOUD_AUTH }}
+
+      - name: GCR Auth
+        uses: actions/gcloud/cli@master
+        with:
+          args: "auth configure-docker"
+
+      - name: Runs goreleaser
+        run: goreleaser release --snapshot --skip-publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+          REGISTRY: ${{ inputs.registry }}
+
+      - name: push images
+        uses: actions/gcloud/cli@master
+        with:
+          args: "docker -- push ${{ inputs.registry}}/cabpk-manager"
+          registry: gcr.io/kubernetes1-226021

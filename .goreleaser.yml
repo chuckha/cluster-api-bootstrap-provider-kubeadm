@@ -19,4 +19,4 @@ dockers:
     dockerfile: goreleaser.dockerfile
     skip_push: true
     image_templates:
-      - 'gcr.io/kubernetes1-226021/cabpk-manager:latest'
+      - '{{ .Env.REGISTRY }}/cabpk-manager:latest'

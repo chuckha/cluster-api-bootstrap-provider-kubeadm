@@ -1,4 +1,5 @@
 name: Release
+description: Runs goreleaser for the created tag.
 on: create
 jobs:
   release:
