@@ -37,7 +37,8 @@ jobs:
 
     - name: docker build
       uses: actions/docker/cli@master
-      run: build -t gcr.io/kubernetes1-226021/cabpk-manager
+      with:
+        args: "build -t gcr.io/kubernetes1-226021/cabpk-manager"
 
     - name: docker tag
       uses: actions/docker/tag@master
